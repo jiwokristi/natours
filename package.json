@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "tsx watch src/server.ts",
-    "start:prod": "NODE_ENV=production tsx src/server.ts",
+    "start:prod": "cross-env NODE_ENV=production tsx src/server.ts",
     "debug": "ndb src/server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
     "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
@@ -50,6 +50,7 @@
     "@types/hpp": "^0.2.7",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.10.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
