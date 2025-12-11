@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { Document, InferSchemaType, model, Schema } from 'mongoose';
 import validator from 'validator';
+import crypto from 'crypto';
 
 export enum UserRole {
   USER = 'user',
@@ -30,6 +31,7 @@ const userSchema = new Schema({
   active: {
     type: Boolean,
     default: true,
+    select: false,
   },
   photo: {
     type: String,
@@ -54,6 +56,8 @@ const userSchema = new Schema({
     },
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 userSchema.pre('save', async function (next) {
@@ -83,6 +87,19 @@ userSchema.methods.changedPasswordAfter = function (jwtTimestamp: number) {
   return false;
 };
 
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
+
 export type UserData = InferSchemaType<typeof userSchema>;
 export interface IUser extends Document, UserData {
   correctPassword(
@@ -90,6 +107,7 @@ export interface IUser extends Document, UserData {
     userPassword: string,
   ): Promise<boolean>;
   changedPasswordAfter(jwtTimestamp: number): boolean;
+  createPasswordResetToken(): string;
 }
 
 const User = model<IUser>('User', userSchema);
