@@ -53,6 +53,7 @@ const userSchema = new Schema({
       message: "Passwords don't match!",
     },
   },
+  passwordChangedAt: Date,
 });
 
 userSchema.pre('save', async function (next) {
@@ -70,12 +71,25 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
+userSchema.methods.changedPasswordAfter = function (jwtTimestamp: number) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = Math.floor(
+      this.passwordChangedAt.getTime() / 1000,
+    );
+
+    return jwtTimestamp < changedTimestamp;
+  }
+
+  return false;
+};
+
 export type UserData = InferSchemaType<typeof userSchema>;
 export interface IUser extends Document, UserData {
   correctPassword(
     candidatePassword: string,
     userPassword: string,
   ): Promise<boolean>;
+  changedPasswordAfter(jwtTimestamp: number): boolean;
 }
 
 const User = model<IUser>('User', userSchema);

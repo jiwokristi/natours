@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import User, { UserData } from 'models/userModel.js';
 
@@ -44,6 +45,73 @@ export const logout = catchAsync(
   },
 );
 
+export const protect = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let token;
+
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+
+    if (!token) {
+      return next(
+        new AppError(
+          'You are not logged in! Please log in to get access.',
+          401,
+        ),
+      );
+    }
+
+    const jwtVerifyPromisified = (token: string, secret: string) => {
+      return new Promise((resolve, reject) => {
+        jwt.verify(token, secret, {}, (err, payload) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(payload);
+          }
+        });
+      });
+    };
+
+    const decoded = (await jwtVerifyPromisified(
+      token,
+      process.env.JWT_SECRET as string,
+    )) as JwtPayload;
+
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next(
+        new AppError(
+          'The user belonging to this token does no longer exist.',
+          401,
+        ),
+      );
+    }
+    if (currentUser.changedPasswordAfter(decoded.iat as number)) {
+      return next(
+        new AppError(
+          'User recently changed password! Please log in again.',
+          401,
+        ),
+      );
+    }
+
+    req.user = currentUser;
+    res.locals.user = currentUser;
+    next();
+  },
+);
+
+export const restrictTo = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {},
+);
+
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {},
 );
@@ -53,13 +121,5 @@ export const resetPassword = catchAsync(
 );
 
 export const updatePassword = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
-);
-
-export const restrictTo = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
-);
-
-export const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {},
 );
