@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { Document, InferSchemaType, model, Schema } from 'mongoose';
 import validator from 'validator';
 
@@ -52,6 +53,14 @@ const userSchema = new Schema({
       message: "Passwords don't match!",
     },
   },
+});
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return;
+
+  this.password = await bcrypt.hash(this.password, 12);
+
+  (this as any).passwordConfirm = undefined;
 });
 
 export type UserData = InferSchemaType<typeof userSchema>;

@@ -41,7 +41,7 @@ export const updateUser = catchAsync(
     );
 
     if (!updatedUser) {
-      next(new AppError('No user found with that ID', 404));
+      return next(new AppError('No user found with that ID', 404));
     }
 
     res.status(200).json({
@@ -58,7 +58,7 @@ export const deleteUser = catchAsync(
     const deletedUser = await User.findByIdAndDelete(req.params.userId);
 
     if (!deletedUser) {
-      next(new AppError('No user found with that ID', 404));
+      return next(new AppError('No user found with that ID', 404));
     }
 
     res.status(204).json({
