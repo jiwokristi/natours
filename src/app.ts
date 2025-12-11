@@ -1,5 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -15,12 +14,12 @@ import userRouter from 'routes/userRoutes.js';
 
 import globalErrorHandler from 'controllers/errorController.js';
 
+import __dirname from 'constants/dirname.js';
+
 const app = express();
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set secure HTTP headers
