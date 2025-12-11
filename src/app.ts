@@ -11,6 +11,7 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 
 import tourRouter from 'routes/tourRoutes.js';
+import userRouter from 'routes/userRoutes.js';
 
 import globalErrorHandler from 'controllers/errorController.js';
 
@@ -95,7 +96,7 @@ app.use(hpp({ whiteList: [] }));
 // * 2) ROUTES
 // app.use('/', (req, res) => {});
 app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/users', (req, res) => {});
+app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', (req, res) => {});
 app.use('/api/v1/bookings', (req, res) => {});
 
