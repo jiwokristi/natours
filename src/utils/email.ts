@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
-import htmlToText from 'html-to-text';
+import { htmlToText } from 'html-to-text';
 import { renderFile } from 'pug';
 
 import __dirname from 'constants/dirname.js';
@@ -58,7 +58,7 @@ class Email {
       to: this.to,
       subject,
       html,
-      text: htmlToText.convert(html),
+      text: htmlToText(html),
     };
 
     // 3) Create a transport and send email
