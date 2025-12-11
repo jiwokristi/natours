@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import User, { UserData } from 'models/userModel.js';
@@ -108,9 +108,17 @@ export const protect = catchAsync(
   },
 );
 
-export const restrictTo = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
-);
+export const restrictTo = (...roles: string[]): RequestHandler => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action.', 403),
+      );
+    }
+
+    next();
+  };
+};
 
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {},
