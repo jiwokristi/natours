@@ -4,10 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "start:windows": "nodemon --dns-result-order=ipv4first server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js",
-    "debug": "ndb server.js",
+    "start": "tsx watch src/server.ts",
+    "start:prod": "cross-env NODE_ENV=production tsx src/server.ts",
+    "debug": "ndb src/server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
     "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
   },
@@ -46,12 +45,20 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/hpp": "^0.2.7",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.10.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-node": "^11.1.0",
     "parcel-bundler": "^1.12.5",
-    "prettier": "^3.7.3"
+    "prettier": "^3.7.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
