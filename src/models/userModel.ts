@@ -63,8 +63,20 @@ userSchema.pre('save', async function (next) {
   (this as any).passwordConfirm = undefined;
 });
 
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string,
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
 export type UserData = InferSchemaType<typeof userSchema>;
-export interface IUser extends Document, UserData {}
+export interface IUser extends Document, UserData {
+  correctPassword(
+    candidatePassword: string,
+    userPassword: string,
+  ): Promise<boolean>;
+}
 
 const User = model<IUser>('User', userSchema);
 

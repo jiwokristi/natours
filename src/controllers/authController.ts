@@ -4,6 +4,7 @@ import User, { UserData } from 'models/userModel.js';
 
 import { createSendToken } from 'services/authServices.js';
 
+import AppError from 'utils/appError.js';
 import catchAsync from 'utils/catchAsync.js';
 
 export const signup = catchAsync(
@@ -15,7 +16,25 @@ export const signup = catchAsync(
 );
 
 export const login = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+  async (
+    req: Request<{}, {}, Pick<UserData, 'email' | 'password'>>,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return next(new AppError('Please provide email and password!', 400));
+    }
+
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user || !(await user.correctPassword(password, user.password))) {
+      return next(new AppError('Incorrect email or password!', 401));
+    }
+
+    createSendToken(user, 200, res);
+  },
 );
 
 export const logout = catchAsync(
