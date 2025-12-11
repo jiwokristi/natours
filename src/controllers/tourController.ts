@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import Tour from 'models/tourModel.js';
-import AppError from 'utils/appError.js';
 
+import AppError from 'utils/appError.js';
 import catchAsync from 'utils/catchAsync.js';
 
 export const getAllTours = catchAsync(

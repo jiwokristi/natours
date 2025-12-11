@@ -1,4 +1,5 @@
 import express from 'express';
+
 import * as tourController from 'controllers/tourController.js';
 
 const router = express.Router();
@@ -10,6 +11,7 @@ router
 
 router
   .route('/:tourId')
+  .get(tourController.getTour)
   .patch(tourController.updateTour)
   .delete(tourController.deleteTour);
 
