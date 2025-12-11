@@ -1,7 +1,7 @@
-import { InferSchemaType, Model, model, Schema } from 'mongoose';
+import { Document, InferSchemaType, model, Schema } from 'mongoose';
 import validator from 'validator';
 
-enum UserRole {
+export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
   GUIDE = 'guide',
@@ -54,10 +54,9 @@ const userSchema = new Schema({
   },
 });
 
-export type IUser = InferSchemaType<typeof userSchema>;
+export type UserData = InferSchemaType<typeof userSchema>;
+export interface IUser extends Document, UserData {}
 
-interface IUserModel extends Model<IUser> {}
-
-const User = model<IUser, IUserModel>('User', userSchema);
+const User = model<IUser>('User', userSchema);
 
 export default User;
