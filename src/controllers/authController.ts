@@ -38,7 +38,10 @@ export const login = catchAsync(
 );
 
 export const logout = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie('jwt');
+    res.status(200).json({ status: 'success' });
+  },
 );
 
 export const forgotPassword = catchAsync(
