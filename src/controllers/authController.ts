@@ -14,6 +14,9 @@ export const signup = catchAsync(
   async (req: Request<{}, {}, UserData>, res: Response, next: NextFunction) => {
     const newUser = await User.create(req.body);
 
+    const url = `${req.protocol}://${req.get('host')}/me`;
+    await new Email(newUser, url).sendWelcome();
+
     createSendToken(newUser, 201, res);
   },
 );
@@ -26,16 +29,19 @@ export const login = catchAsync(
   ) => {
     const { email, password } = req.body;
 
+    // 1) Check if email and password exist
     if (!email || !password) {
       return next(new AppError('Please provide email and password!', 400));
     }
 
+    // 2) Check if user exists && password is correct
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError('Incorrect email or password!', 401));
     }
 
+    // 3) If everything is ok, send token to the client
     createSendToken(user, 200, res);
   },
 );
@@ -49,6 +55,7 @@ export const protect = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     let token;
 
+    // 1) Getting the token and check if it's there
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
@@ -67,6 +74,7 @@ export const protect = catchAsync(
       );
     }
 
+    // 2) Verify token
     const jwtVerifyPromisified = (token: string, secret: string) => {
       return new Promise((resolve, reject) => {
         jwt.verify(token, secret, {}, (err, payload) => {
@@ -84,6 +92,7 @@ export const protect = catchAsync(
       process.env.JWT_SECRET as string,
     )) as JwtPayload;
 
+    // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(
@@ -93,6 +102,8 @@ export const protect = catchAsync(
         ),
       );
     }
+
+    // 4) Check if user changed their password after the token was issued
     if (currentUser.changedPasswordAfter(decoded.iat as number)) {
       return next(
         new AppError(
@@ -102,6 +113,7 @@ export const protect = catchAsync(
       );
     }
 
+    // Grant access to the protected route
     req.user = currentUser;
     res.locals.user = currentUser;
     next();
@@ -128,11 +140,11 @@ export const forgotPassword = catchAsync(
       return next(new AppError('There is no user with email address.', 404));
     }
 
-    // 2) Generate the random reset token
+    // 2) Generate a random reset token
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // 3) Send it to user's email
+    // 3) Send it to the user's email
     const resetURL = `${req.protocol}://${req.get(
       'host',
     )}/api/v1/users/resetPassword/${resetToken}`;
@@ -165,6 +177,7 @@ export const resetPassword = catchAsync(
       return next(new AppError('Token is required!', 400));
     }
 
+    // 1) Get user based on the token
     const hashedToken = crypto
       .createHash('sha256')
       .update(req.params.token)
@@ -175,6 +188,7 @@ export const resetPassword = catchAsync(
       passwordResetExpires: { $gt: Date.now() },
     });
 
+    // 2) If token has not expired, and there is user, set the new password
     if (!user) {
       return next(new AppError('Token is invalid or has expired!', 400));
     }
@@ -184,6 +198,10 @@ export const resetPassword = catchAsync(
     delete user.passwordResetToken;
     delete user.passwordResetExpires;
     await user.save();
+
+    // 3) Update changedPasswordAt property for the user
+    // 4) Log the user in, send JWT
+    createSendToken(user, 200, res);
   },
 );
 
