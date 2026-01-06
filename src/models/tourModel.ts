@@ -1,4 +1,4 @@
-import { Query, Schema, model, InferSchemaType, Model } from 'mongoose';
+import { Query, Schema, model, InferSchemaType, Document } from 'mongoose';
 import slugify from 'slugify';
 
 enum TourDifficulty {
@@ -139,17 +139,12 @@ tourSchema.virtual('durationWeeks').get(function () {
   return oneDecimal(this.duration / 7);
 });
 
-export type ITour = InferSchemaType<typeof tourSchema>;
+export type TourData = InferSchemaType<typeof tourSchema>;
 
-interface ITourModel extends Model<ITour> {
-  // Add your static method signatures here when needed
-  // Example:
-  // findByDifficulty(difficulty: string): Promise<ITour[]>;
-  // calculateStats(): Promise<any>;
-}
+interface ITour extends Document, TourData {}
 
 // In Mongoose 7+, synchronous pre hooks don't need the next() callback
-tourSchema.pre<Query<ITour, ITour>>(/^find/, function () {
+tourSchema.pre<Query<TourData, TourData>>(/^find/, function () {
   this.find({ secretTour: { $ne: true } });
 });
 
@@ -170,6 +165,6 @@ tourSchema.pre('save', function () {
 //   return stats;
 // };
 
-const Tour = model<ITour, ITourModel>('Tour', tourSchema);
+const Tour = model<ITour>('Tour', tourSchema);
 
 export default Tour;
