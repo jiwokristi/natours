@@ -1,5 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -11,15 +10,16 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 
 import tourRouter from 'routes/tourRoutes.js';
+import userRouter from 'routes/userRoutes.js';
 
 import globalErrorHandler from 'controllers/errorController.js';
+
+import __dirname from 'constants/dirname.js';
 
 const app = express();
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set secure HTTP headers
@@ -95,7 +95,7 @@ app.use(hpp({ whiteList: [] }));
 // * 2) ROUTES
 // app.use('/', (req, res) => {});
 app.use('/api/v1/tours', tourRouter);
-app.use('/api/v1/users', (req, res) => {});
+app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', (req, res) => {});
 app.use('/api/v1/bookings', (req, res) => {});
 
