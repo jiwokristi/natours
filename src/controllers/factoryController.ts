@@ -1,12 +1,11 @@
 import { Document, Model, PopulateOptions } from 'mongoose';
-import { Request, Response, NextFunction } from 'express';
 
 import catchAsync from 'utils/catchAsync.js';
 import AppError from 'utils/appError.js';
 import APIFeatures from 'utils/apiFeatures.js';
 
 export const deleteOne = <T extends Document>(Model: Model<T>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndDelete(req.params.id);
 
     if (!doc) {
@@ -20,7 +19,7 @@ export const deleteOne = <T extends Document>(Model: Model<T>) =>
   });
 
 export const updateOne = <T extends Document>(Model: Model<T>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req, res, next) => {
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -39,7 +38,7 @@ export const updateOne = <T extends Document>(Model: Model<T>) =>
   });
 
 export const createOne = <T extends Document>(Model: Model<T>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req, res, next) => {
     const doc = await Model.create(req.body);
 
     res.status(201).json({
@@ -54,7 +53,7 @@ export const getOne = <T extends Document>(
   Model: Model<T>,
   popOptions?: PopulateOptions | PopulateOptions[],
 ) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
     if (popOptions) query = query.populate(popOptions);
     const doc = await query;
@@ -72,7 +71,7 @@ export const getOne = <T extends Document>(
   });
 
 export const getAll = <T extends Document>(Model: Model<T>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async (req, res, next) => {
     // To allow for nested GET reviews on tour (hack)
     let filter: Record<string, any> = {};
     if (req.params.tourId) filter = { tour: req.params.tourId };

@@ -34,22 +34,20 @@ const upload = multer({
 
 export const uploadUserPhoto = upload.single('photo');
 
-export const resizeUserPhoto = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.file) return next();
+export const resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
 
-    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-    // Process user photo with optimized pipeline
-    await processImage(
-      req.file.buffer,
-      `public/img/users/${req.file.filename}`,
-      { width: 500, height: 500, quality: 90 },
-    );
+  // Process user photo with optimized pipeline
+  await processImage(req.file.buffer, `public/img/users/${req.file.filename}`, {
+    width: 500,
+    height: 500,
+    quality: 90,
+  });
 
-    next();
-  },
-);
+  next();
+});
 
 export const getMe = (req: Request, res: Response, next: NextFunction) => {
   req.params.id = req.user.id;
@@ -57,7 +55,7 @@ export const getMe = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const updateMe = catchAsync(
-  async (req: Request<{}, {}, UserData>, res: Response, next: NextFunction) => {
+  async (req: Request<{}, {}, UserData>, res, next) => {
     // 1) Create error if user POSTs password data
     if (req.body.password || req.body.passwordConfirm) {
       return next(
@@ -88,16 +86,14 @@ export const updateMe = catchAsync(
   },
 );
 
-export const deleteMe = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    await deactivateUser(req.user.id);
+export const deleteMe = catchAsync(async (req, res, next) => {
+  await deactivateUser(req.user.id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
-  },
-);
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});
 
 export const getAllUsers = factory.getAll(User);
 export const getUser = factory.getOne(User);
