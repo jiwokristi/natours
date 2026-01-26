@@ -1,14 +1,10 @@
 import bcrypt from 'bcryptjs';
-import { Document, InferSchemaType, model, Schema } from 'mongoose';
+import { Document, InferSchemaType, model, Schema, Query } from 'mongoose';
 import validator from 'validator';
 import crypto from 'crypto';
 
-export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-  GUIDE = 'guide',
-  LEAD_GUIDE = 'lead_guide',
-}
+const userRoles = ['user', 'admin', 'guide', 'lead_guide'] as const;
+export type UserRole = (typeof userRoles)[number];
 
 const userSchema = new Schema({
   name: {
@@ -25,8 +21,8 @@ const userSchema = new Schema({
   },
   role: {
     type: String,
-    enum: Object.values(UserRole),
-    default: UserRole.USER,
+    enum: userRoles,
+    default: 'user',
   },
   active: {
     type: Boolean,
@@ -60,12 +56,22 @@ const userSchema = new Schema({
   passwordResetExpires: Date,
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
 
   this.password = await bcrypt.hash(this.password, 12);
 
   (this as any).passwordConfirm = undefined;
+});
+
+userSchema.pre('save', function () {
+  if (!this.isModified('password') || this.isNew) return;
+
+  (this as any).passwordChangedAt = Date.now() - 1000;
+});
+
+userSchema.pre<Query<UserData, IUser>>(/^find/, function () {
+  this.find({ active: { $ne: false } });
 });
 
 userSchema.methods.correctPassword = async function (

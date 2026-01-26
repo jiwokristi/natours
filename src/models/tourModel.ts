@@ -1,15 +1,11 @@
 import { Query, Schema, model, InferSchemaType, Document } from 'mongoose';
 import slugify from 'slugify';
 
-enum TourDifficulty {
-  EASY = 'easy',
-  MEDIUM = 'medium',
-  HARD = 'hard',
-}
+const tourDifficulties = ['easy', 'medium', 'hard'] as const;
+export type TourDifficultyType = (typeof tourDifficulties)[number];
 
-enum GeoJSONType {
-  POINT = 'Point',
-}
+const geoJSONTypes = ['Point'] as const;
+export type GeoJSONType = (typeof geoJSONTypes)[number];
 
 // 4.666666, 46.6666, 47, 4.7
 const oneDecimal = (val: number) => Math.round(val * 10) / 10;
@@ -43,7 +39,7 @@ const tourSchema = new Schema(
     difficulty: {
       type: String,
       enum: {
-        values: Object.values(TourDifficulty),
+        values: tourDifficulties,
         message: 'Difficulty is either: easy, medium, or hard!',
       },
       required: [true, 'A tour must have a difficulty!'],
@@ -80,31 +76,31 @@ const tourSchema = new Schema(
       type: String,
       required: [true, 'A tour must have a cover image!'],
     },
-    images: {
-      type: [String],
-    },
+    images: [String],
     startLocation: {
       // GeoJSON
       type: {
         type: String,
-        default: GeoJSONType.POINT,
-        enum: Object.values(GeoJSONType),
+        default: 'Point',
+        enum: geoJSONTypes,
       },
       coordinates: [Number],
       address: String,
       description: String,
+      day: Number,
     },
     locations: [
       {
         // GeoJSON
         type: {
           type: String,
-          default: GeoJSONType.POINT,
-          enum: Object.values(GeoJSONType),
+          default: 'Point',
+          enum: geoJSONTypes,
         },
         coordinates: [Number],
         address: String,
         description: String,
+        day: Number,
       },
     ],
     // todo: guides: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
@@ -139,12 +135,8 @@ tourSchema.virtual('durationWeeks').get(function () {
   return oneDecimal(this.duration / 7);
 });
 
-export type TourData = InferSchemaType<typeof tourSchema>;
-
-interface ITour extends Document, TourData {}
-
 // In Mongoose 7+, synchronous pre hooks don't need the next() callback
-tourSchema.pre<Query<TourData, TourData>>(/^find/, function () {
+tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
   this.find({ secretTour: { $ne: true } });
 });
 
@@ -153,17 +145,8 @@ tourSchema.pre('save', function () {
   this.slug = slugify(this.name, { lower: true });
 });
 
-// Example of adding static methods (uncomment and implement as needed)
-// tourSchema.statics.findByDifficulty = function(difficulty: string) {
-//   return this.find({ difficulty });
-// };
-//
-// tourSchema.statics.calculateStats = async function() {
-//   const stats = await this.aggregate([
-//     // aggregation pipeline
-//   ]);
-//   return stats;
-// };
+export type TourData = InferSchemaType<typeof tourSchema>;
+export interface ITour extends Document, TourData {}
 
 const Tour = model<ITour>('Tour', tourSchema);
 
