@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 
 import User, { UserData } from 'models/userModel.js';
@@ -78,10 +77,10 @@ export const protect = catchAsync(async (req, res, next) => {
   }
 
   // 2) Verify token
-  const decoded = (await jwtVerifyPromisified(
+  const decoded = await jwtVerifyPromisified(
     token,
     process.env.JWT_SECRET as string,
-  )) as JwtPayload;
+  );
 
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -111,10 +110,10 @@ export const protect = catchAsync(async (req, res, next) => {
 export const isLoggedIn = catchAsync(async (req, res, next) => {
   if (req.cookies.jwt) {
     // 1) Verify token
-    const decoded = (await jwtVerifyPromisified(
+    const decoded = await jwtVerifyPromisified(
       req.cookies.jwt,
       process.env.JWT_SECRET as string,
-    )) as JwtPayload;
+    );
 
     // 2) Check if user still exists
     const currentUser = await User.findById(decoded.id);

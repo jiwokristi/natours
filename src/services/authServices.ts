@@ -1,5 +1,5 @@
 import type { Response, CookieOptions } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 import { IUser } from 'models/userModel.js';
 
@@ -43,7 +43,10 @@ export const createSendToken = (
   });
 };
 
-export const jwtVerifyPromisified = (token: string, secret: string) => {
+export const jwtVerifyPromisified = (
+  token: string,
+  secret: string,
+): JwtPayload => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, secret, {}, (err, payload) => {
       if (err) {
