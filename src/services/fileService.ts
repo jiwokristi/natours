@@ -91,6 +91,11 @@ export interface TourWithImages {
   images?: string[];
 }
 
+export interface TourImageFiles {
+  imageCover?: Express.Multer.File[];
+  images?: Express.Multer.File[];
+}
+
 export const buildTourImagePaths = (oldTour: TourWithImages): string[] => {
   const pathsToDelete: string[] = [];
 
