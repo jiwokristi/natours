@@ -4,7 +4,10 @@ import crypto from 'crypto';
 
 import User, { UserData } from 'models/userModel.js';
 
-import { createSendToken } from 'services/authServices.js';
+import {
+  createSendToken,
+  jwtVerifyPromisified,
+} from 'services/authServices.js';
 
 import AppError from 'utils/appError.js';
 import catchAsync from 'utils/catchAsync.js';
@@ -47,7 +50,11 @@ export const login = catchAsync(
 );
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
-  res.clearCookie('jwt');
+  res.clearCookie('jwt', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none',
+  });
   res.status(200).json({ status: 'success' });
 };
 
@@ -75,18 +82,6 @@ export const protect = catchAsync(
     }
 
     // 2) Verify token
-    const jwtVerifyPromisified = (token: string, secret: string) => {
-      return new Promise((resolve, reject) => {
-        jwt.verify(token, secret, {}, (err, payload) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(payload);
-          }
-        });
-      });
-    };
-
     const decoded = (await jwtVerifyPromisified(
       token,
       process.env.JWT_SECRET as string,
@@ -119,6 +114,34 @@ export const protect = catchAsync(
     next();
   },
 );
+
+// Only for rendered pages, no errors!
+export const isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    // 1) Verify token
+    const decoded = (await jwtVerifyPromisified(
+      req.cookies.jwt,
+      process.env.JWT_SECRET as string,
+    )) as JwtPayload;
+
+    // 2) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+
+    // 3) Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat as number)) {
+      return next();
+    }
+
+    // THERE IS A LOGGED IN USER
+    res.locals.user = currentUser;
+    return next();
+  }
+
+  next();
+});
 
 export const restrictTo = (...roles: string[]): RequestHandler => {
   return (req, res, next) => {
