@@ -1,8 +1,10 @@
 import sharp from 'sharp';
 import * as fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-import __dirname from 'constants/dirname.js';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const deleteFile = async (filePath: string): Promise<void> => {
   try {

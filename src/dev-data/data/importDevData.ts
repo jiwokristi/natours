@@ -1,15 +1,19 @@
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import Tour from 'models/tourModel.js';
 import User from 'models/userModel.js';
 // import Review from 'models/reviewModel.js';
 
-dotenv.config({ path: './config.env' });
+import 'config/env.ts';
 
 mongoose.connect(process.env.DATABASE as string).then(() => {
   console.log('DB connection successful! 😍');
 });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // READ JSON FILE
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));

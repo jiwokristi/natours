@@ -14,13 +14,11 @@ import userRouter from 'routes/userRoutes.js';
 
 import globalErrorHandler from 'controllers/errorController.js';
 
-import __dirname from 'constants/dirname.js';
-
 const app = express();
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Set secure HTTP headers
 // -------------------------------------------------------------

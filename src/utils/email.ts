@@ -2,10 +2,13 @@ import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport/index.js';
 import { htmlToText } from 'html-to-text';
 import { renderFile } from 'pug';
-
-import __dirname from 'constants/dirname.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 import { IUser } from 'models/userModel.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class Email {
   public to: string;
