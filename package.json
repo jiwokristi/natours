@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "tsx watch src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "start:prod": "cross-env NODE_ENV=production tsx src/server.ts",
     "debug": "ndb src/server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",

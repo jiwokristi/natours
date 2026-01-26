@@ -17,26 +17,8 @@ import './config/env.js';
 // The app may rely on process.env, so load it only after dotenv runs.
 import app from './app.js';
 
-// Build MongoDB connection string
-// -------------------------------------------------------------
-// Replace <db_password> placeholder with the real password from env vars.
-// Use DATABASE_STANDARD for Windows, otherwise use DATABASE
-let DB;
-if (process.env.DATABASE_STANDARD && process.platform === 'win32') {
-  console.log('Using standard MongoDB URI for Windows...');
-  DB = process.env.DATABASE_STANDARD.replace(
-    '<db_password>',
-    process.env.DATABASE_PASSWORD as string,
-  );
-} else {
-  DB = (process.env.DATABASE as string).replace(
-    '<db_password>',
-    process.env.DATABASE_PASSWORD as string,
-  );
-}
-
 mongoose
-  .connect(DB)
+  .connect(process.env.DATABASE as string)
   .then(() => console.log('DB connection successful! 😍'))
   .catch(err => {
     console.log('DB connection error! 💥');
