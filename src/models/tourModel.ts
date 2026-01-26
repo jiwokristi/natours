@@ -103,7 +103,7 @@ const tourSchema = new Schema(
         day: Number,
       },
     ],
-    // todo: guides: [{type: mongoose.Schema.ObjectId, ref: 'User'}],
+    guides: [{ type: Schema.ObjectId, ref: 'User' }],
     ratingsAverage: {
       type: Number,
       default: 4.5,
@@ -131,8 +131,24 @@ const tourSchema = new Schema(
   },
 );
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
 tourSchema.virtual('durationWeeks').get(function () {
   return oneDecimal(this.duration / 7);
+});
+
+// Virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
+tourSchema.pre('save', function () {
+  // @ts-ignore package has no official TypeScript type definitions.
+  this.slug = slugify(this.name, { lower: true });
 });
 
 // In Mongoose 7+, synchronous pre hooks don't need the next() callback
@@ -140,9 +156,11 @@ tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
   this.find({ secretTour: { $ne: true } });
 });
 
-tourSchema.pre('save', function () {
-  // @ts-ignore package has no official TypeScript type definitions.
-  this.slug = slugify(this.name, { lower: true });
+tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
 });
 
 export type TourData = InferSchemaType<typeof tourSchema>;
