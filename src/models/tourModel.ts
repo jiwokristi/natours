@@ -1,7 +1,7 @@
 import { Query, Schema, model, InferSchemaType, Document } from 'mongoose';
 import slugify from 'slugify';
 
-const tourDifficulties = ['easy', 'medium', 'hard'] as const;
+const tourDifficulties = ['easy', 'medium', 'difficult'] as const;
 export type TourDifficultyType = (typeof tourDifficulties)[number];
 
 const geoJSONTypes = ['Point'] as const;
