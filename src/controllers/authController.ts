@@ -49,11 +49,14 @@ export const login = catchAsync(
 );
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
+  const isProd = process.env.NODE_ENV === 'production';
+
   res.clearCookie('jwt', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
   });
+
   res.status(200).json({ status: 'success' });
 };
 

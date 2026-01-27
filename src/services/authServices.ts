@@ -15,6 +15,8 @@ export const createSendToken = (
 ) => {
   const token = signToken(user._id.toString());
 
+  const isProd = process.env.NODE_ENV === 'production';
+
   const cookieOptions: CookieOptions = {
     expires: new Date(
       Date.now() +
@@ -25,8 +27,8 @@ export const createSendToken = (
           1000,
     ),
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
   };
 
   res.cookie('jwt', token, cookieOptions);
