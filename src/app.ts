@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -18,6 +19,12 @@ import viewRouter from 'routes/viewRoutes.js';
 import globalErrorHandler from 'controllers/errorController.js';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
@@ -91,7 +98,18 @@ app.use(cookieParser());
 // This middleware forces a single value (the last one) unless allowed.
 // whiteList: parameters allowed to appear multiple times (optional)
 // @ts-ignore package has no official TypeScript type definitions.
-app.use(hpp({ whiteList: [] }));
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
 
 // * 2) ROUTES
 app.use('/', viewRouter);
