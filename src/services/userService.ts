@@ -1,6 +1,6 @@
 import User, { IUser, UserData } from 'models/userModel.js';
 
-import { buildUserImagePaths, cleanupAsync } from './fileService.js';
+import { buildUserImagePaths, cleanupAsync } from 'utils/fileManager.js';
 
 export const updateUserWithCleanup = async (
   userId: string,

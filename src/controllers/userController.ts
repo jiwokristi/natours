@@ -8,8 +8,8 @@ import * as factory from 'controllers/factoryController.js';
 import AppError from 'utils/appError.js';
 import catchAsync from 'utils/catchAsync.js';
 import { filterObj } from 'utils/helpers/filter.js';
+import { processImage } from 'utils/fileManager.js';
 
-import { processImage } from 'services/fileService.js';
 import { deactivateUser, updateUserWithCleanup } from 'services/userService.js';
 
 const multerStorage = multer.memoryStorage();

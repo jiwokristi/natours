@@ -7,7 +7,6 @@ import * as factory from 'controllers/factoryController.js';
 
 import AppError from 'utils/appError.js';
 import catchAsync from 'utils/catchAsync.js';
-
 import {
   buildTourImagePaths,
   cleanupAsync,
@@ -15,7 +14,7 @@ import {
   processImages,
   TourImageFiles,
   TourWithImages,
-} from 'services/fileService.js';
+} from 'utils/fileManager.js';
 
 const multerStorage = multer.memoryStorage();
 
