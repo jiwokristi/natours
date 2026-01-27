@@ -170,8 +170,8 @@ export const forgotPassword = catchAsync(async (req, res, next) => {
       message: 'Token sent to email!',
     });
   } catch (err) {
-    delete user.passwordResetToken;
-    delete user.passwordResetExpires;
+    (user as any).passwordResetToken = undefined;
+    (user as any).passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
 
     return next(
@@ -206,8 +206,8 @@ export const resetPassword = catchAsync(async (req, res, next) => {
 
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
-  delete user.passwordResetToken;
-  delete user.passwordResetExpires;
+  (user as any).passwordResetToken = undefined;
+  (user as any).passwordResetExpires = undefined;
   await user.save();
 
   // 3) Update changedPasswordAt property for the user
