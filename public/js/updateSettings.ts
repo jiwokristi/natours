@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { UserData } from 'models/userModel.js';
+import { UserData } from 'models/userModel';
 
-import { showAlert } from './alert.js';
+import { showAlert } from './alert';
 
 export const updateSettings = async (
   data:

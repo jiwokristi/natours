@@ -1,7 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "lib": ["esnext"]
+    "target": "es2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "composite": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*.ts"]
 }

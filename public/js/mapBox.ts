@@ -1,8 +1,8 @@
 import mapboxgl, { LngLatLike } from 'mapbox-gl';
 
-import { TourData } from 'models/tourModel.js';
+import { ITour } from 'shared/types/tour.js';
 
-export const displayMap = (locations: TourData['locations']) => {
+export const displayMap = (locations: ITour['locations']) => {
   // @ts-ignore
   mapboxgl.accessToken =
     'pk.eyJ1Ijoiaml3b2tyaXN0aSIsImEiOiJjbWlmbWpydjcwNmlwM2ZwczRsN3R5NzRrIn0.GQjOk1w87jwUqOQIeoK83w';
@@ -11,9 +11,6 @@ export const displayMap = (locations: TourData['locations']) => {
     container: 'map',
     style: 'mapbox://styles/jiwokristi/cmifn6toi00mx01pfevpz652e',
     scrollZoom: false,
-    // center: [-118.113491, 34.111745],
-    // zoom: 10,
-    // interactive: false
   });
 
   const bounds = new mapboxgl.LngLatBounds();

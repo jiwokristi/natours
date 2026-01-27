@@ -39,7 +39,34 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 //   - Strict-Transport-Security (HSTS)
 //   - Content-Security-Policy (optional to configure)
 // These headers help protect your app from common web vulnerabilities.
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          'https://js.stripe.com',
+          'https://api.mapbox.com',
+        ],
+        styleSrc: [
+          "'self'",
+          'https://fonts.googleapis.com',
+          'https://api.mapbox.com',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://api.mapbox.com'],
+        connectSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+        frameSrc: ['https://js.stripe.com'],
+      },
+    },
+  }),
+);
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {

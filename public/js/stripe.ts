@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { showAlert } from './alert.js';
+import { showAlert } from './alert';
 
 export const bookTour = async (tourId: string) => {
   try {
@@ -12,7 +12,10 @@ export const bookTour = async (tourId: string) => {
     // 2) Create checkout form + charge credit card
     window.location.replace(session.data.session.url);
   } catch (err) {
-    console.error(err);
-    showAlert('error', err);
+    if (axios.isAxiosError(err)) {
+      showAlert('error', err.response?.data?.message ?? 'Something went wrong');
+    } else {
+      showAlert('error', 'Unexpected error');
+    }
   }
 };
