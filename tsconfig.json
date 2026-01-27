@@ -1,13 +1,8 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "esnext",
-
-    "lib": ["esnext"],
-    "types": ["node"],
-
     "strict": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
 
     "baseUrl": "./src",
     "paths": {
@@ -15,9 +10,10 @@
     },
 
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    "moduleResolution": "nodenext"
+    "exactOptionalPropertyTypes": true
   },
-  "include": ["src", "src/config/env.ts"]
+  "references": [
+    { "path": "./tsconfig.server.json" },
+    { "path": "./tsconfig.client.json" }
+  ]
 }

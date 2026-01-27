@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
@@ -11,10 +12,19 @@ import cookieParser from 'cookie-parser';
 
 import tourRouter from 'routes/tourRoutes.js';
 import userRouter from 'routes/userRoutes.js';
+import reviewRouter from 'routes/reviewRoutes.js';
+import bookingRouter from 'routes/bookingRoutes.js';
+import viewRouter from 'routes/viewRoutes.js';
 
 import globalErrorHandler from 'controllers/errorController.js';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
@@ -29,7 +39,34 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 //   - Strict-Transport-Security (HSTS)
 //   - Content-Security-Policy (optional to configure)
 // These headers help protect your app from common web vulnerabilities.
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          'https://js.stripe.com',
+          'https://api.mapbox.com',
+        ],
+        styleSrc: [
+          "'self'",
+          'https://fonts.googleapis.com',
+          'https://api.mapbox.com',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://api.mapbox.com'],
+        connectSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+        frameSrc: ['https://js.stripe.com'],
+      },
+    },
+  }),
+);
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
@@ -88,14 +125,25 @@ app.use(cookieParser());
 // This middleware forces a single value (the last one) unless allowed.
 // whiteList: parameters allowed to appear multiple times (optional)
 // @ts-ignore package has no official TypeScript type definitions.
-app.use(hpp({ whiteList: [] }));
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
 
 // * 2) ROUTES
-// app.use('/', (req, res) => {});
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/reviews', (req, res) => {});
-app.use('/api/v1/bookings', (req, res) => {});
+app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 app.all('*path', (req, res, next) => {
   next();

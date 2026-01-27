@@ -1,16 +1,12 @@
-import { Query, Schema, model, InferSchemaType, Document } from 'mongoose';
+import { Query, Schema, model, InferSchemaType } from 'mongoose';
 import slugify from 'slugify';
 
-const tourDifficulties = ['easy', 'medium', 'difficult'] as const;
-export type TourDifficultyType = (typeof tourDifficulties)[number];
-
-const geoJSONTypes = ['Point'] as const;
-export type GeoJSONType = (typeof geoJSONTypes)[number];
+import { tourDifficulties, geoJSONTypes, ITour } from '../shared/types/tour.js';
 
 // 4.666666, 46.6666, 47, 4.7
 const oneDecimal = (val: number) => Math.round(val * 10) / 10;
 
-const tourSchema = new Schema(
+const tourSchema = new Schema<ITour>(
   {
     name: {
       type: String,
@@ -152,11 +148,11 @@ tourSchema.pre('save', function () {
 });
 
 // In Mongoose 7+, synchronous pre hooks don't need the next() callback
-tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
+tourSchema.pre<Query<ITour, ITour>>(/^find/, function () {
   this.find({ secretTour: { $ne: true } });
 });
 
-tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
+tourSchema.pre<Query<ITour, ITour>>(/^find/, function () {
   this.populate({
     path: 'guides',
     select: '-__v -passwordChangedAt',
@@ -164,7 +160,6 @@ tourSchema.pre<Query<TourData, ITour>>(/^find/, function () {
 });
 
 export type TourData = InferSchemaType<typeof tourSchema>;
-export interface ITour extends Document, TourData {}
 
 const Tour = model<ITour>('Tour', tourSchema);
 
