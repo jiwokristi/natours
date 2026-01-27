@@ -3,7 +3,6 @@
     "module": "nodenext",
     "target": "esnext",
 
-    "lib": ["esnext"],
     "types": ["node"],
 
     "strict": true,
@@ -18,6 +17,5 @@
     "exactOptionalPropertyTypes": true,
 
     "moduleResolution": "nodenext"
-  },
-  "include": ["src", "src/config/env.ts"]
+  }
 }
