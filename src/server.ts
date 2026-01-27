@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 
 // Handle synchronous errors NOT caught anywhere in the code
 // -------------------------------------------------------------
@@ -12,33 +11,14 @@ process.on('uncaughtException', err => {
   process.exit(1); // Force shutdown
 });
 
-dotenv.config({ path: './.env' });
-
+import './config/env.js';
 // Import Express app AFTER environment variables are loaded
 // -------------------------------------------------------------
 // The app may rely on process.env, so load it only after dotenv runs.
 import app from './app.js';
 
-// Build MongoDB connection string
-// -------------------------------------------------------------
-// Replace <db_password> placeholder with the real password from env vars.
-// Use DATABASE_STANDARD for Windows, otherwise use DATABASE
-let DB;
-if (process.env.DATABASE_STANDARD && process.platform === 'win32') {
-  console.log('Using standard MongoDB URI for Windows...');
-  DB = process.env.DATABASE_STANDARD.replace(
-    '<db_password>',
-    process.env.DATABASE_PASSWORD,
-  );
-} else {
-  DB = process.env.DATABASE.replace(
-    '<db_password>',
-    process.env.DATABASE_PASSWORD,
-  );
-}
-
 mongoose
-  .connect(DB)
+  .connect(process.env.DATABASE as string)
   .then(() => console.log('DB connection successful! 😍'))
   .catch(err => {
     console.log('DB connection error! 💥');
@@ -61,7 +41,7 @@ const server = app.listen(port, () => {
 // This could leave the app in an unstable state, so we shut down gracefully:
 // 1. Close the server
 // 2. Exit the process
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err: any) => {
   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
   console.log(err.name, err.message);
   server.close(() => {

@@ -5,17 +5,30 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
+// @ts-ignore package has no official TypeScript type definitions.
 import xss from 'xss-clean';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 
+import tourRouter from 'routes/tourRoutes.js';
+import userRouter from 'routes/userRoutes.js';
+import reviewRouter from 'routes/reviewRoutes.js';
+import bookingRouter from 'routes/bookingRoutes.js';
+import viewRouter from 'routes/viewRoutes.js';
+
+import globalErrorHandler from 'controllers/errorController.js';
+
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 // * 1) GLOBAL MIDDLEWARES
 // Serving static files
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Set secure HTTP headers
 // -------------------------------------------------------------
@@ -26,7 +39,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   - Strict-Transport-Security (HSTS)
 //   - Content-Security-Policy (optional to configure)
 // These headers help protect your app from common web vulnerabilities.
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          'https://js.stripe.com',
+          'https://api.mapbox.com',
+        ],
+        styleSrc: [
+          "'self'",
+          'https://fonts.googleapis.com',
+          'https://api.mapbox.com',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https://api.mapbox.com'],
+        connectSrc: [
+          "'self'",
+          'https://api.mapbox.com',
+          'https://events.mapbox.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+        frameSrc: ['https://js.stripe.com'],
+      },
+    },
+  }),
+);
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
@@ -63,7 +103,8 @@ app.use(cookieParser());
 // these characters are used in malicious MongoDB operators like:
 //   { "$gt": "" }  or  { "email": { "$ne": null } }
 // Without this, attackers could manipulate your database queries.
-app.use(mongoSanitize());
+//! deprecated
+// app.use(mongoSanitize());
 
 // Prevent XSS (Cross-Site Scripting) attacks
 // -------------------------------------------------------------
@@ -72,7 +113,8 @@ app.use(mongoSanitize());
 //   <script>alert("Hacked")</script>
 // This middleware sanitizes such input so it cannot run in browsers.
 // Essential whenever you store user-generated content.
-app.use(xss());
+//! deprecated
+// app.use(xss());
 
 // Prevent HTTP Parameter Pollution (HPP)
 // -------------------------------------------------------------
@@ -82,17 +124,31 @@ app.use(xss());
 // Without hpp(), Express would turn this into: { role: ["admin", "user"] }
 // This middleware forces a single value (the last one) unless allowed.
 // whiteList: parameters allowed to appear multiple times (optional)
-app.use(hpp({ whiteList: [] }));
+// @ts-ignore package has no official TypeScript type definitions.
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  }),
+);
 
 // * 2) ROUTES
-app.use('/', (req, res) => {});
-app.use('/api/v1/tours', (req, res) => {});
-app.use('/api/v1/users', (req, res) => {});
-app.use('/api/v1/reviews', (req, res) => {});
-app.use('/api/v1/bookings', (req, res) => {});
+app.use('/', viewRouter);
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 
 app.all('*path', (req, res, next) => {
   next();
 });
+
+app.use(globalErrorHandler);
 
 export default app;
